@@ -1,5 +1,4 @@
 // lib/presentation/screens/main/my_listings_screen.dart
-// import 'dart:io'; // <-- We don't need this anymore
 import 'package:book_swap/presentation/providers/book_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +8,7 @@ class MyListingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // 1. Watch the REAL list
     final myListings = ref.watch(myListingsProvider);
 
     return Scaffold(
@@ -16,7 +16,7 @@ class MyListingsScreen extends ConsumerWidget {
       body: myListings.isEmpty
           ? const Center(
               child: Text(
-                'You haven\'t posted any books yet.\nTry posting one with "Otani Ibe" as the author.',
+                'You haven\'t posted any books yet.',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.white70, fontSize: 16),
               ),
@@ -34,10 +34,8 @@ class MyListingsScreen extends ConsumerWidget {
                   child: ListTile(
                     leading: ClipRRect(
                       borderRadius: BorderRadius.circular(4.0),
-                      // --- THIS IS THE SIMPLIFIED WIDGET ---
                       child: Image.network(
-                        // <-- Only use Image.network
-                        book['imageUrl']!,
+                        book.imageUrl,
                         width: 50,
                         height: 50,
                         fit: BoxFit.cover,
@@ -51,11 +49,11 @@ class MyListingsScreen extends ConsumerWidget {
                       ),
                     ),
                     title: Text(
-                      book['title']!,
+                      book.title,
                       style: const TextStyle(color: Colors.white),
                     ),
                     subtitle: Text(
-                      book['author']!,
+                      book.author,
                       style: const TextStyle(color: Colors.white70),
                     ),
                     trailing: Row(
@@ -73,9 +71,10 @@ class MyListingsScreen extends ConsumerWidget {
                             color: Colors.redAccent,
                           ),
                           onPressed: () {
+                            // 2. Pass the book ID
                             ref
-                                .read(bookListProvider.notifier)
-                                .deleteBook(book['title']!);
+                                .read(bookControllerProvider.notifier)
+                                .deleteBook(book.id);
                           },
                         ),
                       ],

@@ -1,41 +1,14 @@
+// lib/presentation/screens/home_screen.dart
 import 'package:flutter/material.dart';
-
 import 'package:book_swap/presentation/screens/main/browse_screen.dart';
+import 'package:book_swap/presentation/screens/main/my_listings_screen.dart';
+// We can leave this import
+import 'package:book_swap/presentation/screens/main/settings_screen.dart';
 
-class MyListingsScreen extends StatelessWidget {
-  const MyListingsScreen({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("My Listings")),
-      body: const Center(child: Text("My Listings Screen")),
-    );
-  }
-}
+// --- THIS IS THE LINE YOU ARE LIKELY MISSING ---
+import 'package:book_swap/presentation/screens/main/chat_screen.dart';
+// --- END OF FIX ---
 
-class ChatsScreen extends StatelessWidget {
-  const ChatsScreen({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Chats")),
-      body: const Center(child: Text("Chats Screen")),
-    );
-  }
-}
-
-class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Settings")),
-      body: const Center(child: Text("Settings Screen")),
-    );
-  }
-}
-
-// --- THIS IS THE MAIN HOME SCREEN WIDGET ---
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -44,12 +17,13 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0; // This tracks the active tab
+  int _selectedIndex = 0;
 
-  static const List<Widget> _pages = <Widget>[
-    BrowseScreen(),
-    MyListingsScreen(),
-    ChatsScreen(),
+  // The 'ChatsScreen' class will now be found
+  static final List<Widget> _pages = <Widget>[
+    const BrowseScreen(),
+    const MyListingsScreen(),
+    const ChatsScreen(), // This will now be correct
     SettingsScreen(),
   ];
 
@@ -65,16 +39,12 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Center(child: _pages.elementAt(_selectedIndex)),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
-          // Tab 1: Browse
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Browse'),
-          // Tab 2: My Listings
           BottomNavigationBarItem(icon: Icon(Icons.book), label: 'My Listings'),
-          // Tab 3: Chats
           BottomNavigationBarItem(
             icon: Icon(Icons.chat_bubble_outline),
             label: 'Chats',
           ),
-          // Tab 4: Settings
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
             label: 'Settings',

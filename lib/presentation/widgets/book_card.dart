@@ -1,22 +1,13 @@
 // lib/presentation/widgets/book_card.dart
-// import 'dart:io'; // <-- We don't need this anymore
+import 'package:book_swap/domain/entities/book.dart'; // <-- Import Book
 import 'package:flutter/material.dart';
 
 class BookCard extends StatelessWidget {
-  final String title;
-  final String author;
-  final String condition;
-  final String imageUrl;
+  // 1. We now accept a single Book object
+  final Book book;
   final VoidCallback onSwapPressed;
 
-  const BookCard({
-    super.key,
-    required this.title,
-    required this.author,
-    required this.condition,
-    required this.imageUrl,
-    required this.onSwapPressed,
-  });
+  const BookCard({super.key, required this.book, required this.onSwapPressed});
 
   // Placeholder for broken images
   Widget _buildErrorPlaceholder() {
@@ -39,12 +30,11 @@ class BookCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // --- THIS IS THE SIMPLIFIED IMAGE WIDGET ---
             ClipRRect(
               borderRadius: BorderRadius.circular(8.0),
+              // 2. Use data from the book object
               child: Image.network(
-                // <-- Only use Image.network
-                imageUrl,
+                book.imageUrl, // <-- Use object
                 width: 80,
                 height: 110,
                 fit: BoxFit.cover,
@@ -53,7 +43,6 @@ class BookCard extends StatelessWidget {
                 },
               ),
             ),
-            // --- END OF UPDATE ---
             const SizedBox(width: 16),
             Expanded(
               child: Column(
@@ -65,7 +54,7 @@ class BookCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          title,
+                          book.title, // <-- Use object
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -93,14 +82,14 @@ class BookCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'by $author',
+                    'by ${book.author}', // <-- Use object
                     style: TextStyle(fontSize: 14, color: Colors.grey[400]),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 8),
                   Chip(
-                    label: Text(condition),
+                    label: Text(book.condition), // <-- Use object
                     labelStyle: const TextStyle(color: Colors.black87),
                     backgroundColor: const Color(0xFFE9C46A),
                     padding: EdgeInsets.zero,

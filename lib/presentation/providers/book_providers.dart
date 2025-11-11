@@ -1,8 +1,14 @@
 // lib/presentation/providers/book_providers.dart
+import 'package:book_swap/domain/entities/book.dart';
+// --- 1. THIS IS THE MISSING IMPORT THAT FIXES EVERYTHING ---
+import 'package:book_swap/presentation/providers/auth_providers.dart';
+// --- END OF FIX ---
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloudinary_public/cloudinary_public.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
+// --- Cloudinary Provider ---
 final cloudinaryProvider = Provider<CloudinaryPublic>((ref) {
   return CloudinaryPublic(
     'dxgda9wrv', // Your Cloud Name
@@ -11,97 +17,45 @@ final cloudinaryProvider = Provider<CloudinaryPublic>((ref) {
   );
 });
 
-// --- 1. MOCK DATA UPDATED ---
-// We've added 'status' and 'requesterId' to our mock data
-final List<Map<String, String>> dummyBooks = [
-  {
-    "title": "Advanced Frontend Development",
-    "author": "Jane Smith",
-    "condition": "Like New",
-    "imageUrl":
-        "https://m.media-amazon.com/images/I/511-vIg1HaL._AC_UF1000,1000_QL80_.jpg",
-    "status": "available",
-    "requesterId": "",
-  },
-  {
-    "title": "Introduction to Databases",
-    "author": "C.J. Date",
-    "condition": "Used",
-    "imageUrl": "https://pictures.abebooks.com/isbn/9780321197849-us-300.jpg",
-    "status": "available",
-    "requesterId": "",
-  },
-  {
-    "title": "Dart for Beginners",
-    "author": "Chris Baker",
-    "condition": "New",
-    "imageUrl":
-        "https://m.media-amazon.com/images/I/71gP2-c328L._AC_UF1000,1000_QL80_.jpg",
-    "status": "available",
-    "requesterId": "",
-  },
-];
-
-// --- 2. NOTIFIER UPDATED ---
-class BookListNotifier extends StateNotifier<List<Map<String, String>>> {
-  BookListNotifier() : super(dummyBooks);
-
-  void addBook(Map<String, String> book) {
-    state = [book, ...state];
-  }
-
-  void deleteBook(String title) {
-    state = state.where((book) => book['title'] != title).toList();
-  }
-
-  // --- NEW FUNCTION for Swap Logic ---
-  void requestSwap(String title) {
-    // Find the book, update its status, and set our mock user as the requester
-    state = [
-      for (final book in state)
-        if (book['title'] == title)
-          {
-            ...book, // Keep all old data
-            'status': 'pending', // Change status
-            'requesterId': 'Otani Ibe', // Set our mock user
-          }
-        else
-          book,
-    ];
-    print('Swap requested for $title');
-  }
-}
-
-// --- 3. PROVIDERS UPDATED ---
-final bookListProvider =
-    StateNotifierProvider<BookListNotifier, List<Map<String, String>>>((ref) {
-      return BookListNotifier();
-    });
-
-// NEW: We create a provider for the "Browse" screen that *only*
-// shows books with a status of 'available'.
-final browseListProvider = Provider<List<Map<String, String>>>((ref) {
-  final allBooks = ref.watch(bookListProvider);
-  return allBooks.where((book) => book['status'] == 'available').toList();
+// --- Provides the current user's ID ---
+final currentUserIdProvider = Provider<String?>((ref) {
+  // 'authStateProvider' will now be found
+  final authState = ref.watch(authStateProvider);
+  return authState.value?.uid;
 });
 
-// This provider is for "My Listings" (books I own)
-final myListingsProvider = Provider<List<Map<String, String>>>((ref) {
-  final allBooks = ref.watch(bookListProvider);
-  return allBooks
-      .where((book) => book['author'] == 'Otani Ibe') // Mock user
-      .toList();
+// --- REAL FIREBASE STREAM PROVIDER ---
+final booksStreamProvider = StreamProvider<List<Book>>((ref) {
+  // 'firestoreProvider' will now be found
+  final firestore = ref.watch(firestoreProvider);
+  return firestore
+      .collection('books')
+      .orderBy('createdAt', descending: true)
+      .snapshots()
+      .map((snapshot) {
+        return snapshot.docs.map((doc) => Book.fromFirestore(doc)).toList();
+      });
 });
 
-// NEW: This provider is for "My Offers" (books I want)
-final myOffersProvider = Provider<List<Map<String, String>>>((ref) {
-  final allBooks = ref.watch(bookListProvider);
-  return allBooks
-      .where((book) => book['requesterId'] == 'Otani Ibe') // Mock user
-      .toList();
+// --- FILTERED PROVIDERS ---
+final browseListProvider = Provider<List<Book>>((ref) {
+  final allBooks = ref.watch(booksStreamProvider).value ?? [];
+  return allBooks.where((book) => book.status == 'available').toList();
 });
-// --- END OF NEW PROVIDERS ---
 
+final myListingsProvider = Provider<List<Book>>((ref) {
+  final allBooks = ref.watch(booksStreamProvider).value ?? [];
+  final userId = ref.watch(currentUserIdProvider);
+  return allBooks.where((book) => book.authorId == userId).toList();
+});
+
+final myOffersProvider = Provider<List<Book>>((ref) {
+  final allBooks = ref.watch(booksStreamProvider).value ?? [];
+  final userId = ref.watch(currentUserIdProvider);
+  return allBooks.where((book) => book.requesterId == userId).toList();
+});
+
+// --- BOOK CONTROLLER ---
 final bookControllerProvider = StateNotifierProvider<BookController, bool>((
   ref,
 ) {
@@ -112,16 +66,18 @@ class BookController extends StateNotifier<bool> {
   final Ref _ref;
   BookController(this._ref) : super(false);
 
+  // 'firestoreProvider' will now be found
+  FirebaseFirestore get _firestore => _ref.read(firestoreProvider);
+
   Future<String> _uploadImageToCloudinary(XFile image) async {
-    // ... (rest of this function is unchanged)
     final cloudinary = _ref.read(cloudinaryProvider);
     try {
-      CloudinaryFile file = await CloudinaryFile.fromFile(
+      CloudinaryFile file = CloudinaryFile.fromFile(
         image.path,
         resourceType: CloudinaryResourceType.Image,
       );
       CloudinaryResponse response = await cloudinary.uploadFile(file);
-      return response.secureUrl; // Return the internet URL
+      return response.secureUrl;
     } on CloudinaryException catch (e) {
       print('Cloudinary Error: ${e.message}');
       rethrow;
@@ -134,6 +90,10 @@ class BookController extends StateNotifier<bool> {
     required String condition,
     required XFile? image,
   }) async {
+    final userId = _ref.read(currentUserIdProvider);
+    if (userId == null) {
+      throw Exception('Not logged in.');
+    }
     if (image == null) {
       throw Exception('Please select a cover image.');
     }
@@ -143,28 +103,61 @@ class BookController extends StateNotifier<bool> {
 
     state = true;
     try {
-      print('--- UPLOADING IMAGE TO CLOUDINARY ---');
       final imageUrl = await _uploadImageToCloudinary(image);
-      print('--- UPLOAD SUCCESSFUL: $imageUrl ---');
 
-      // --- 4. UPDATE "createBook" ---
-      // Add the new fields to our new book
       final newBook = {
         "title": title,
         "author": author,
+        "authorId": userId,
         "condition": condition,
         "imageUrl": imageUrl,
-        "status": "available", // <-- Add this
-        "requesterId": "", // <-- Add this
+        "status": "available",
+        "requesterId": "",
+        "createdAt": FieldValue.serverTimestamp(),
       };
 
-      _ref.read(bookListProvider.notifier).addBook(newBook);
-      print('--- BOOK CREATED SUCCESSFULLY ---');
+      await _firestore.collection('books').add(newBook);
     } catch (e) {
       print('Error creating book: $e');
       rethrow;
     } finally {
       state = false;
+    }
+  }
+
+  Future<void> requestSwap(String bookId, String userId) async {
+    await _firestore.collection('books').doc(bookId).update({
+      'status': 'pending',
+      'requesterId': userId,
+    });
+  }
+
+  Future<void> cancelSwap(String bookId) async {
+    await _firestore.collection('books').doc(bookId).update({
+      'status': 'available',
+      'requesterId': '',
+    });
+  }
+
+  Future<void> deleteBook(String bookId) async {
+    await _firestore.collection('books').doc(bookId).delete();
+  }
+
+  Future<void> updateBook({
+    required String bookId,
+    required String title,
+    required String author,
+    required String condition,
+  }) async {
+    try {
+      await _firestore.collection('books').doc(bookId).update({
+        'title': title,
+        'author': author,
+        'condition': condition,
+      });
+    } catch (e) {
+      print('Error updating book: $e');
+      rethrow;
     }
   }
 }

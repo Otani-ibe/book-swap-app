@@ -33,10 +33,25 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
             _passwordController.text.trim(),
             _nameController.text.trim(),
           );
-    } catch (e) {
-      // --- THIS IS THE FIX ---
+
+      // --- 1. THIS IS THE NEW LOGIC ---
       if (!context.mounted) return;
-      // --- END OF FIX ---
+
+      // Show a success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Success! Please check your email to verify your account.',
+          ),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      // Go back to the LoginScreen
+      Navigator.of(context).pop();
+      // --- END OF NEW LOGIC ---
+    } catch (e) {
+      if (!context.mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
@@ -90,7 +105,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 ),
                 const SizedBox(height: 32),
                 ElevatedButton(
-                  onPressed: onSignUp,
+                  onPressed: isLoading
+                      ? null
+                      : onSignUp, // Disable button when loading
                   style: ElevatedButton.styleFrom(
                     backgroundColor: theme.colorScheme.primary, // Yellow
                     padding: const EdgeInsets.symmetric(vertical: 16),

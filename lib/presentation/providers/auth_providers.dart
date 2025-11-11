@@ -1,66 +1,129 @@
 // lib/presentation/providers/auth_providers.dart
-
-// --- THIS IS THE FIX ---
-// It was 'package.flutter_riverpod'
-// It is now 'package:flutter_riverpod'
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-// --- END OF FIX ---
 
-// We'll add the real Firebase providers here later
-// final firebaseAuthProvider = Provider((ref) => FirebaseAuth.instance);
-// final firestoreProvider = Provider((ref) => FirebaseFirestore.instance);
+// --- REAL FIREBASE PROVIDERS ---
+final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
+  return FirebaseAuth.instance;
+});
 
-// This provider will control our auth logic (signup, login, logout)
-// It's a "StateNotifier" that will hold a "boolean" (true/false)
-// to tell our UI if it's "loading" or not.
+final firestoreProvider = Provider<FirebaseFirestore>((ref) {
+  return FirebaseFirestore.instance;
+});
+// --- END OF REAL PROVIDERS ---
+
+final authStateProvider = StreamProvider<User?>((ref) {
+  return ref.watch(firebaseAuthProvider).authStateChanges();
+});
+
 final authControllerProvider = StateNotifierProvider<AuthController, bool>((
   ref,
 ) {
-  // We pass the 'ref' so it can access other providers (like Firebase)
   return AuthController(ref);
 });
 
-// Because the import is fixed, the app will now understand
-// 'StateNotifier' and 'Ref'
 class AuthController extends StateNotifier<bool> {
   final Ref _ref;
-  // 'super(false)' means it's NOT loading by default
   AuthController(this._ref) : super(false);
 
-  // We'll get the real auth/firestore from the ref later
-  // final _auth = _ref.read(firebaseAuthProvider);
-  // final _firestore = _ref.read(firestoreProvider);
+  FirebaseAuth get _auth => _ref.read(firebaseAuthProvider);
+  FirebaseFirestore get _firestore => _ref.read(firestoreProvider);
 
   Future<void> signUp(String email, String password, String displayName) async {
-    state = true; // Set loading to true
+    state = true;
     try {
-      // --- THIS IS WHERE FIREBASE CODE WILL GO ---
-      // For now, we'll just pretend to do work
-      print('Signing up with: $displayName, $email, $password');
-      await Future.delayed(const Duration(seconds: 2));
-      print('Sign up successful!');
-      // --- END OF MOCK LOGIC ---
+      final cred = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      User? user = cred.user;
+      if (user != null) {
+        final batch = _firestore.batch();
+
+        // Operation 1: Create the user's profile document
+        final userDocRef = _firestore.collection('users').doc(user.uid);
+        batch.set(userDocRef, {
+          'email': email,
+          'displayName': displayName,
+          'uid': user.uid,
+        });
+
+        // --- STARTER BOOKS ---
+        // "My First Starter Book" is GONE.
+
+        // Operation 2: Create "Advanced Frontend Development"
+        final book1Ref = _firestore.collection('books').doc();
+        batch.set(book1Ref, {
+          "title": "Advanced Frontend Development",
+          "author": displayName,
+          "authorId": user.uid,
+          "condition": "Like New",
+          "imageUrl":
+              "https://eloquentjavascript.net/img/cover.jpg", // Working URL
+          "status": "available",
+          "requesterId": "",
+          "createdAt": FieldValue.serverTimestamp(),
+        });
+
+        // Operation 3: Create "Introduction to Databases"
+        final book2Ref = _firestore.collection('books').doc();
+        batch.set(book2Ref, {
+          "title": "Introduction to Databases",
+          "author": displayName,
+          "authorId": user.uid,
+          "condition": "Used",
+          "imageUrl":
+              "https://pictures.abebooks.com/isbn/9780321197849-us-300.jpg",
+          "status": "available",
+          "requesterId": "",
+          "createdAt": FieldValue.serverTimestamp(),
+        });
+
+        // --- END OF STARTER BOOKS ---
+
+        await batch.commit();
+        await user.sendEmailVerification();
+        await _auth.signOut();
+
+        print(
+          'Sign up successful! Verification email sent and starter books created.',
+        );
+      }
     } catch (e) {
       print('Error signing up: $e');
       rethrow;
     } finally {
-      state = false; // Set loading to false
+      state = false;
     }
   }
 
   Future<void> logIn(String email, String password) async {
+    // ... (This function is correct, no changes needed)
     state = true;
     try {
-      // --- THIS IS WHERE FIREBASE CODE WILL GO ---
-      print('Logging in with: $email, $password');
-      await Future.delayed(const Duration(seconds: 2));
+      final cred = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      if (cred.user != null && !cred.user!.emailVerified) {
+        await _auth.signOut();
+        throw Exception(
+          'Email not verified. Please check your inbox and verify your email.',
+        );
+      }
       print('Login successful!');
-      // --- END OF MOCK LOGIC ---
     } catch (e) {
       print('Error logging in: $e');
       rethrow;
     } finally {
       state = false;
     }
+  }
+
+  Future<void> logOut() async {
+    await _auth.signOut();
   }
 }

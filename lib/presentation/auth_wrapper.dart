@@ -1,37 +1,32 @@
 // lib/presentation/auth_wrapper.dart
+import 'package:book_swap/presentation/providers/auth_providers.dart';
+import 'package:book_swap/presentation/screens/auth/login_screen.dart';
 import 'package:book_swap/presentation/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-// LATER, we will use this Riverpod provider to check if the user is logged in
-// final authStateProvider = StreamProvider<User?>((ref) {
-//   // return ref.watch(firebaseAuthProvider).authStateChanges();
-// });
 
 class AuthWrapper extends ConsumerWidget {
   const AuthWrapper({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // --- THIS IS THE REAL LOGIC WE WILL USE LATER ---
-    // final authState = ref.watch(authStateProvider);
-    // return authState.when(
-    //   data: (user) {
-    //     if (user != null) {
-    //       return const HomeScreen(); // User is logged in
-    //     }
-    //     return const LoginScreen(); // User is logged out
-    //   },
-    //   loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
-    //   error: (err, stack) => Scaffold(body: Center(child: Text('Error: $err'))),
-    // );
+    // --- THIS IS THE REAL, LIVE LOGIC ---
+    // We are now watching the real authStateProvider
+    final authState = ref.watch(authStateProvider);
 
-    // --- THIS IS THE UPDATED PART FOR TESTING ---
-    // We are temporarily skipping the LoginScreen to test our main app.
-    return const HomeScreen();
-
-    // --- To go back to the LoginScreen, comment out the line above
-    // --- and uncomment this line:
-    // return const LoginScreen();
+    return authState.when(
+      data: (user) {
+        // Check if user is logged in AND email is verified
+        if (user != null && user.emailVerified) {
+          return const HomeScreen(); // User is logged in
+        }
+        // If user is null, or not verified, show Login
+        return const LoginScreen();
+      },
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error: (err, stack) => Scaffold(body: Center(child: Text('Error: $err'))),
+    );
+    // --- END OF REAL LOGIC ---
   }
 }
