@@ -1,4 +1,3 @@
-// lib/presentation/screens/main/my_offers_screen.dart
 import 'package:book_swap/presentation/providers/book_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,7 +7,6 @@ class MyOffersScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 1. Watch the REAL list
     final myOffers = ref.watch(myOffersProvider);
 
     return Scaffold(
@@ -86,7 +84,6 @@ class MyOffersScreen extends ConsumerWidget {
                             ),
                           ),
                           onPressed: () {
-                            // 2. Pass the book ID
                             ref
                                 .read(bookControllerProvider.notifier)
                                 .cancelSwap(book.id);
