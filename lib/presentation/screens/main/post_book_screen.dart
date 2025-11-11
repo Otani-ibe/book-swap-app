@@ -1,4 +1,3 @@
-// lib/presentation/screens/main/post_book_screen.dart
 import 'dart:io';
 import 'package:book_swap/presentation/providers/book_providers.dart';
 import 'package:book_swap/presentation/widgets/custom_textfield.dart';
@@ -6,11 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
-// --- Providers for this screen ---
 final imagePickerProvider = Provider<ImagePicker>((ref) => ImagePicker());
 final selectedImageProvider = StateProvider<XFile?>((ref) => null);
 final selectedConditionProvider = StateProvider<String>((ref) => 'New');
-// ---------------------------------
 
 class PostBookScreen extends ConsumerStatefulWidget {
   const PostBookScreen({super.key});
@@ -59,15 +56,11 @@ class _PostBookScreenState extends ConsumerState<PostBookScreen> {
             image: selectedImage,
           );
 
-      // --- THIS IS THE FIX ---
       if (!context.mounted) return;
-      // --- END OF FIX ---
       ref.read(selectedImageProvider.notifier).state = null;
       Navigator.of(context).pop();
     } catch (e) {
-      // --- THIS IS THE FIX ---
       if (!context.mounted) return;
-      // --- END OF FIX ---
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(e.toString())));
