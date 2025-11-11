@@ -1,4 +1,3 @@
-// lib/presentation/screens/auth/signup_screen.dart
 import 'package:book_swap/presentation/providers/auth_providers.dart';
 import 'package:book_swap/presentation/widgets/custom_textfield.dart';
 import 'package:flutter/material.dart';
@@ -34,10 +33,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
             _nameController.text.trim(),
           );
 
-      // --- 1. THIS IS THE NEW LOGIC ---
       if (!context.mounted) return;
 
-      // Show a success message
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
@@ -47,9 +44,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         ),
       );
 
-      // Go back to the LoginScreen
       Navigator.of(context).pop();
-      // --- END OF NEW LOGIC ---
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(
@@ -126,7 +121,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF1A1A2E), // Dark blue text
+                            color: Color(0xFF1A1A2E),
                           ),
                         ),
                 ),
