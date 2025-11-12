@@ -1,9 +1,7 @@
-// lib/presentation/providers/auth_providers.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-// --- REAL FIREBASE PROVIDERS ---
 final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
   return FirebaseAuth.instance;
 });
@@ -11,7 +9,6 @@ final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
 final firestoreProvider = Provider<FirebaseFirestore>((ref) {
   return FirebaseFirestore.instance;
 });
-// --- END OF REAL PROVIDERS ---
 
 final authStateProvider = StreamProvider<User?>((ref) {
   return ref.watch(firebaseAuthProvider).authStateChanges();
@@ -42,7 +39,6 @@ class AuthController extends StateNotifier<bool> {
       if (user != null) {
         final batch = _firestore.batch();
 
-        // Operation 1: Create the user's profile document
         final userDocRef = _firestore.collection('users').doc(user.uid);
         batch.set(userDocRef, {
           'email': email,
@@ -50,10 +46,7 @@ class AuthController extends StateNotifier<bool> {
           'uid': user.uid,
         });
 
-        // --- STARTER BOOKS ---
-        // "My First Starter Book" is GONE.
-
-        // Operation 2: Create "Advanced Frontend Development"
+        // --- NEW WORKING IMAGE URL ---
         final book1Ref = _firestore.collection('books').doc();
         batch.set(book1Ref, {
           "title": "Advanced Frontend Development",
@@ -61,13 +54,12 @@ class AuthController extends StateNotifier<bool> {
           "authorId": user.uid,
           "condition": "Like New",
           "imageUrl":
-              "https://eloquentjavascript.net/img/cover.jpg", // Working URL
+              "https://m.media-amazon.com/images/I/511-vIg1HaL._AC_UF1000,1000_QL80_.jpg",
           "status": "available",
           "requesterId": "",
           "createdAt": FieldValue.serverTimestamp(),
         });
 
-        // Operation 3: Create "Introduction to Databases"
         final book2Ref = _firestore.collection('books').doc();
         batch.set(book2Ref, {
           "title": "Introduction to Databases",
@@ -81,18 +73,11 @@ class AuthController extends StateNotifier<bool> {
           "createdAt": FieldValue.serverTimestamp(),
         });
 
-        // --- END OF STARTER BOOKS ---
-
         await batch.commit();
         await user.sendEmailVerification();
         await _auth.signOut();
-
-        print(
-          'Sign up successful! Verification email sent and starter books created.',
-        );
       }
     } catch (e) {
-      print('Error signing up: $e');
       rethrow;
     } finally {
       state = false;
@@ -100,7 +85,6 @@ class AuthController extends StateNotifier<bool> {
   }
 
   Future<void> logIn(String email, String password) async {
-    // ... (This function is correct, no changes needed)
     state = true;
     try {
       final cred = await _auth.signInWithEmailAndPassword(
@@ -114,9 +98,7 @@ class AuthController extends StateNotifier<bool> {
           'Email not verified. Please check your inbox and verify your email.',
         );
       }
-      print('Login successful!');
     } catch (e) {
-      print('Error logging in: $e');
       rethrow;
     } finally {
       state = false;

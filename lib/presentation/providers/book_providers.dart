@@ -1,32 +1,20 @@
-// lib/presentation/providers/book_providers.dart
 import 'package:book_swap/domain/entities/book.dart';
-// --- 1. THIS IS THE MISSING IMPORT THAT FIXES EVERYTHING ---
 import 'package:book_swap/presentation/providers/auth_providers.dart';
-// --- END OF FIX ---
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloudinary_public/cloudinary_public.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
-// --- Cloudinary Provider ---
 final cloudinaryProvider = Provider<CloudinaryPublic>((ref) {
-  return CloudinaryPublic(
-    'dxgda9wrv', // Your Cloud Name
-    'rzg3v3tn', // Your Upload Preset
-    cache: false,
-  );
+  return CloudinaryPublic('dxgda9wrv', 'rzg3v3tn', cache: false);
 });
 
-// --- Provides the current user's ID ---
 final currentUserIdProvider = Provider<String?>((ref) {
-  // 'authStateProvider' will now be found
   final authState = ref.watch(authStateProvider);
   return authState.value?.uid;
 });
 
-// --- REAL FIREBASE STREAM PROVIDER ---
 final booksStreamProvider = StreamProvider<List<Book>>((ref) {
-  // 'firestoreProvider' will now be found
   final firestore = ref.watch(firestoreProvider);
   return firestore
       .collection('books')
@@ -37,7 +25,6 @@ final booksStreamProvider = StreamProvider<List<Book>>((ref) {
       });
 });
 
-// --- FILTERED PROVIDERS ---
 final browseListProvider = Provider<List<Book>>((ref) {
   final allBooks = ref.watch(booksStreamProvider).value ?? [];
   return allBooks.where((book) => book.status == 'available').toList();
@@ -55,7 +42,6 @@ final myOffersProvider = Provider<List<Book>>((ref) {
   return allBooks.where((book) => book.requesterId == userId).toList();
 });
 
-// --- BOOK CONTROLLER ---
 final bookControllerProvider = StateNotifierProvider<BookController, bool>((
   ref,
 ) {
@@ -66,7 +52,6 @@ class BookController extends StateNotifier<bool> {
   final Ref _ref;
   BookController(this._ref) : super(false);
 
-  // 'firestoreProvider' will now be found
   FirebaseFirestore get _firestore => _ref.read(firestoreProvider);
 
   Future<String> _uploadImageToCloudinary(XFile image) async {
@@ -78,8 +63,7 @@ class BookController extends StateNotifier<bool> {
       );
       CloudinaryResponse response = await cloudinary.uploadFile(file);
       return response.secureUrl;
-    } on CloudinaryException catch (e) {
-      print('Cloudinary Error: ${e.message}');
+    } on CloudinaryException {
       rethrow;
     }
   }
@@ -118,7 +102,6 @@ class BookController extends StateNotifier<bool> {
 
       await _firestore.collection('books').add(newBook);
     } catch (e) {
-      print('Error creating book: $e');
       rethrow;
     } finally {
       state = false;
@@ -156,7 +139,6 @@ class BookController extends StateNotifier<bool> {
         'condition': condition,
       });
     } catch (e) {
-      print('Error updating book: $e');
       rethrow;
     }
   }

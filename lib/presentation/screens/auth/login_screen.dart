@@ -40,6 +40,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    //... (rest of your build method is the same)
     final theme = Theme.of(context);
     final isLoading = ref.watch(authControllerProvider);
 
@@ -77,7 +78,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               const SizedBox(height: 32),
               ElevatedButton(
-                onPressed: onLogin,
+                onPressed: isLoading ? null : onLogin,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: theme.colorScheme.primary, // Yellow
                   padding: const EdgeInsets.symmetric(vertical: 16),

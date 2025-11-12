@@ -1,11 +1,10 @@
-// lib/domain/entities/book.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Book {
-  final String id; // The Firestore document ID
+  final String id;
   final String title;
   final String author;
-  final String authorId; // The user.uid of the owner
+  final String authorId;
   final String condition;
   final String imageUrl;
   final String status;
@@ -22,7 +21,6 @@ class Book {
     required this.requesterId,
   });
 
-  // Factory constructor to create a Book from a Firestore document
   factory Book.fromFirestore(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     return Book(

@@ -1,5 +1,4 @@
-// lib/presentation/screens/main/browse_screen.dart
-// <-- Import auth
+import 'package:book_swap/presentation/providers/auth_providers.dart';
 import 'package:book_swap/presentation/providers/book_providers.dart';
 import 'package:book_swap/presentation/widgets/book_card.dart';
 import 'package:flutter/material.dart';
@@ -13,9 +12,7 @@ class BrowseScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final books = ref.watch(browseListProvider);
-    final userId = ref.watch(
-      currentUserIdProvider,
-    ); // <-- 'currentUserIdProvider' is now defined
+    final userId = ref.watch(currentUserIdProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -44,12 +41,11 @@ class BrowseScreen extends ConsumerWidget {
       body: ListView.builder(
         itemCount: books.length,
         itemBuilder: (context, index) {
-          final book = books[index]; // 'book' is now a Book object
+          final book = books[index];
           return BookCard(
-            book: book, // <-- Pass the object
+            book: book,
             onSwapPressed: () {
               if (userId != null) {
-                // 'requestSwap' and 'book.id' are now correct
                 ref
                     .read(bookControllerProvider.notifier)
                     .requestSwap(book.id, userId);

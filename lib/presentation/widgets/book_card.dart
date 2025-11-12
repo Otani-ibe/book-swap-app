@@ -1,15 +1,12 @@
-// lib/presentation/widgets/book_card.dart
-import 'package:book_swap/domain/entities/book.dart'; // <-- Import Book
+import 'package:book_swap/domain/entities/book.dart';
 import 'package:flutter/material.dart';
 
 class BookCard extends StatelessWidget {
-  // 1. We now accept a single Book object
   final Book book;
   final VoidCallback onSwapPressed;
 
   const BookCard({super.key, required this.book, required this.onSwapPressed});
 
-  // Placeholder for broken images
   Widget _buildErrorPlaceholder() {
     return Container(
       width: 80,
@@ -32,9 +29,8 @@ class BookCard extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(8.0),
-              // 2. Use data from the book object
               child: Image.network(
-                book.imageUrl, // <-- Use object
+                book.imageUrl,
                 width: 80,
                 height: 110,
                 fit: BoxFit.cover,
@@ -54,7 +50,7 @@ class BookCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          book.title, // <-- Use object
+                          book.title,
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -82,14 +78,14 @@ class BookCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'by ${book.author}', // <-- Use object
+                    'by ${book.author}',
                     style: TextStyle(fontSize: 14, color: Colors.grey[400]),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 8),
                   Chip(
-                    label: Text(book.condition), // <-- Use object
+                    label: Text(book.condition),
                     labelStyle: const TextStyle(color: Colors.black87),
                     backgroundColor: const Color(0xFFE9C46A),
                     padding: EdgeInsets.zero,

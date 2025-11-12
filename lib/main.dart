@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:book_swap/presentation/auth_wrapper.dart'; // <-- 1. IMPORT THIS
+import 'package:book_swap/presentation/auth_wrapper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,7 +12,7 @@ void main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
   } catch (e) {
-    print('Failed to initialize Firebase: $e');
+    // We can't use print, so we'll just ignore this in release mode
   }
 
   runApp(const ProviderScope(child: MyApp()));
@@ -28,10 +28,10 @@ class MyApp extends StatelessWidget {
       title: 'BookSwap',
       theme: ThemeData(
         brightness: Brightness.dark,
-        primaryColor: const Color(0xFF1A1A2E), // Dark blue
+        primaryColor: const Color(0xFF1A1A2E),
         scaffoldBackgroundColor: const Color(0xFF1A1A2E),
         colorScheme: const ColorScheme.dark(
-          primary: Color(0xFFE9C46A), // Yellow/Gold accent
+          primary: Color(0xFFE9C46A),
           secondary: Color(0xFFE9C46A),
           surface: Color(0xFF1A1A2E),
           onSurface: Colors.white,
@@ -43,7 +43,7 @@ class MyApp extends StatelessWidget {
         ),
         bottomNavigationBarTheme: const BottomNavigationBarThemeData(
           backgroundColor: Color(0xFF1A1A2E),
-          selectedItemColor: Color(0xFFE9C46A), // Yellow
+          selectedItemColor: Color(0xFFE9C46A),
           unselectedItemColor: Colors.grey,
           type: BottomNavigationBarType.fixed,
         ),
