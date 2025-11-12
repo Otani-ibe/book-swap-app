@@ -1,14 +1,14 @@
-// lib/presentation/screens/main/my_listings_screen.dart
+import 'package:book_swap/domain/entities/book.dart';
 import 'package:book_swap/presentation/providers/book_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:book_swap/presentation/screens/main/edit_book_screen.dart';
 
 class MyListingsScreen extends ConsumerWidget {
   const MyListingsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 1. Watch the REAL list
     final myListings = ref.watch(myListingsProvider);
 
     return Scaffold(
@@ -62,7 +62,12 @@ class MyListingsScreen extends ConsumerWidget {
                         IconButton(
                           icon: const Icon(Icons.edit, color: Colors.white70),
                           onPressed: () {
-                            // TODO: Navigate to Edit screen
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    EditBookScreen(book: book),
+                              ),
+                            );
                           },
                         ),
                         IconButton(
@@ -71,7 +76,6 @@ class MyListingsScreen extends ConsumerWidget {
                             color: Colors.redAccent,
                           ),
                           onPressed: () {
-                            // 2. Pass the book ID
                             ref
                                 .read(bookControllerProvider.notifier)
                                 .deleteBook(book.id);
