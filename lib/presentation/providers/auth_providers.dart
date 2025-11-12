@@ -1,3 +1,4 @@
+// lib/presentation/providers/auth_providers.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -46,7 +47,7 @@ class AuthController extends StateNotifier<bool> {
           'uid': user.uid,
         });
 
-        // --- NEW WORKING IMAGE URL ---
+        // --- 1. NEW STABLE IMAGE URL ---
         final book1Ref = _firestore.collection('books').doc();
         batch.set(book1Ref, {
           "title": "Advanced Frontend Development",
@@ -54,12 +55,13 @@ class AuthController extends StateNotifier<bool> {
           "authorId": user.uid,
           "condition": "Like New",
           "imageUrl":
-              "https://m.media-amazon.com/images/I/511-vIg1HaL._AC_UF1000,1000_QL80_.jpg",
+              "https://covers.openlibrary.org/b/id/8233322-L.jpg", // (Cover for "C Programming")
           "status": "available",
           "requesterId": "",
           "createdAt": FieldValue.serverTimestamp(),
         });
 
+        // --- 2. NEW STABLE IMAGE URL ---
         final book2Ref = _firestore.collection('books').doc();
         batch.set(book2Ref, {
           "title": "Introduction to Databases",
@@ -67,7 +69,7 @@ class AuthController extends StateNotifier<bool> {
           "authorId": user.uid,
           "condition": "Used",
           "imageUrl":
-              "https://pictures.abebooks.com/isbn/9780321197849-us-300.jpg",
+              "https://covers.openlibrary.org/b/id/10234298-L.jpg", // (Cover for "Database Systems")
           "status": "available",
           "requesterId": "",
           "createdAt": FieldValue.serverTimestamp(),
