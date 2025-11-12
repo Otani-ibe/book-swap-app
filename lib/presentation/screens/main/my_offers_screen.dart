@@ -1,3 +1,4 @@
+import 'package:book_swap/domain/entities/book.dart';
 import 'package:book_swap/presentation/providers/book_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -53,6 +54,7 @@ class MyOffersScreen extends ConsumerWidget {
                       'Swap with: ${book.author}',
                       style: const TextStyle(color: Colors.white70),
                     ),
+
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.center,
